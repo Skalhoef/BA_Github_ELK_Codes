@@ -23,11 +23,15 @@ call mpi_comm_size(mpicom,np_mpi,ierror)
 ! determine the local MPI process number
 call mpi_comm_rank(mpicom,lp_mpi,ierror)
 ! determine if the local process is the master
+! SK: Begin Additions
+open(91,file='C_EVECSV_INFO'//trim(filext),form='FORMATTED')
+! SK: End Additions
 if (lp_mpi == 0) then
   mp_mpi=.true.
   write(*,*)
   write(*,'("+---------------------------------+")')
   write(*,'("| Elk code version ",I1.1,".",I1.1,".",I2.2," started |")') version
+  write(*,'(" The fourth Test with Nastaran!!!! ")')
   write(*,'("+---------------------------------+")')
 else
   mp_mpi=.false.
@@ -128,6 +132,10 @@ do itask=1,ntasks
     call writelsj
   case(20,21,22,23)
     call bandstr
+  ! SK: Begin Additions
+  case(24)
+    call spintexture1d
+  ! SK: End Additions
   case(25)
     call effmass
   case(28,29)
@@ -148,7 +156,9 @@ do itask=1,ntasks
     call vecplot
   case(91,92,93)
     call dbxcplot
-  case(100,101)
+  ! SK: Begin Additions
+  case(100,101,103)
+  ! SK: End Additions
     call fermisurf
   case(102)
     call fermisurfbxsf
@@ -290,6 +300,9 @@ if (mp_mpi) then
   write(*,'("| Elk code stopped |")')
   write(*,'("+------------------+")')
 end if
+! SK: Begin Additions
+close(91)
+! SK: End Additions
 ! terminate MPI execution environment
 call mpi_finalize(ierror)
 end program

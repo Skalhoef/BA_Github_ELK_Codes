@@ -195,6 +195,17 @@ if (spinpol_) then
   read(100) rvfcmt_,rvfir_
   call rgvfcmt(bsmt)
   call rgvir(bsir)
+  ! SK: Begin Additions
+  if (.true.) then
+     magmt(:,:,:)=0.d0
+     magir(:,:)=0.d0
+     bxcmt(:,:,:)=0.d0
+     bsmt(:,:,:)=0.d0
+     bxcir(:,:)=0.d0
+     bsir(:,:)=0.d0
+  endif
+  ! SK: End Additions 
+
   deallocate(rvfmt_,rvfir_,rvfcmt_)
 ! read fixed spin moment effective fields
   if (fsmtype_ /= 0) then

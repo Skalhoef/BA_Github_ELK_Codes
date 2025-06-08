@@ -33,9 +33,17 @@ implicit none
 ! local variables
 logical twrite
 integer ik,nmix,nwork
+! SK: Begin Additions 
+integer i, is, ia, ias
+! SK: End Additions
 real(8) dv,etp,de,timetot
 ! allocatable arrays
+
+! SK: Begin Additions
 real(8), allocatable :: work(:)
+complex(8), allocatable :: dmtr(:,:,:,:,:)
+! SK: End Additions
+
 ! initialise global variables
 call init0
 call init1
@@ -194,6 +202,21 @@ do iscl=1,maxscl
 ! write the FTM tensor moments to file
     if (ftmtype /= 0) call writeftm
 ! generate the DFT+U or FTM muffin-tin potential matrices
+    
+    ! SK: Begin Additions
+    allocate(dmtr(lmmaxdm,nspinor,lmmaxdm,nspinor,0:1))
+    do i = 1, ndftu
+    is = isldu(1, i)
+    do ia = 1, natoms(is)
+        ias = idxas(ia, is)
+        ! Optional: Print matrix shape and bounds
+        call trdmatdu(lmaxdm, lmmaxdm, dmatmt(:,:,:,:,ias), dmtr)
+        dmatmt(:,:,:,:,ias) = dmtr(:,:,:,:,0)
+    end do
+end do
+    deallocate(dmtr)
+     ! SK: End Additions 
+     
     call genvmatmt
   end if
   if (dftu /= 0) then
