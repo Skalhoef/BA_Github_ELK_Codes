@@ -57,7 +57,96 @@ integer idx(nstsv)
 complex(8) wfir(ngtc,nspinor),wfgp(ngkmax)
 ! allocatable arrays
 complex(8), allocatable :: wfmt(:,:,:)
+
+! SK.
+integer :: iseb, jseb, kseb, lseb, mseb
+! SK End
+
 call timesec(ts0)
+
+
+! SK: Added Write-statement.
+write(99,'("      Variables, Values and Meanings: ")')
+write(99, '()')
+
+write(99, '("      ngkmax = maximal number of G+k-vectors for all k.")')
+write(99, '("             ... cf. also findgnkmax.f90.")')
+write(99, '("      ngkmax = ", I10)') ngkmax
+write(99, '()')
+
+write(99, '("      natmtot = number of atomic species.")')
+write(99, '("      natmtot = ", I10)') natmtot
+write(99, '()')
+
+write(99, '("      apwordmax = ", I10)') apwordmax
+write(99, '()')
+
+write(99, '("      lmmaxapw = (lmaxapw+1)^2.")')
+write(99, '("               = ( 8 + 1)^2.")')
+write(99, '("      lmmaxapw = ", I10)') lmmaxapw
+write(99, '()')
+
+write(99, '("      nmatmax = maximum nmat over all k-points.")')
+write(99, '("              ... is determined in init1.f90.")')
+write(99, '("      nmatmax = ", I10)') nmatmax
+write(99, '()')
+
+write(99, '("      nstfv = number of first-variational states.")')
+write(99, '("            = number of computed (not necc. occupied) bands.")')
+write(99, '("      nstfv = ", I10)') nstfv
+write(99, '()')
+
+write(99, '("      nstsv = number of second-variational states.")')
+write(99, '("            = 2 * nstfv")')
+write(99, '("      nstsv = ", I10)') nstsv
+write(99, '()')
+
+
+write(99, '("      nspnfv = number of spin-dependent first-variational functions per state (?).")')
+write(99, '("             ... seems somehow like a weird variable...")')
+write(99, '("      nspnfv = ", I10)') nspnfv
+write(99, '()')
+
+write(99, '("      ngp =^ number of G+p-vectors (in,integer(nspnfv)).")')
+write(99, '("      ngp array values:")')
+write(99, '()')
+
+do iseb = 1, nspnfv
+    write(99, '("      ngp(", I3, ") = ", I10)') iseb, ngp(iseb)
+end do
+write(99, '()')
+
+write(99, '("      wppt = ", F12.6)') wppt
+write(99, '()')
+
+
+!   igpig  : index from G+p-vectors to G-vectors (in,integer(ngkmax,nspnfv))
+write(99,'("      We print igpg now.")')
+write(99,'("      Reminder: igpg = : index from G+p-vectors to G-vectors (in,integer(ngkmax,nspnfv)).???")')
+write(99, '()')
+
+do jseb = 1, nspnfv
+  do iseb = 1, ngkmax
+    write(98, '(I10)', advance="no") igpig(iseb, jseb)
+  end do
+  write(98, *)  ! New line after each row
+end do
+
+do jseb = 1, nspnfv
+  do iseb = 1, ngp(nspnfv)
+    write(96, '(I10)', advance="no") igpig(iseb, jseb)
+  end do
+  write(96, *)  ! New line after each row
+end do
+
+do iseb = 1, nstsv
+    write(97, '(F12.6)') occsvp(iseb)  ! Print each value with 6 decimal places
+end do
+
+write(99,'("      We entering a for-loop over nstsv now in order to count occupied states")')
+flush(99)
+
+
 !----------------------------------------------!
 !     muffin-tin density and magnetisation     !
 !----------------------------------------------!
@@ -68,7 +157,55 @@ do ist=1,nstsv
   nst=nst+1
   idx(nst)=ist
 end do
+
+write(99,'("      We are done with the for-loop.")')
+write(99, '()')
+
+
+write(99, '("      nst = number of occupied bands / states.")')
+write(99, '("      nst = ", I10)') nst
+write(99, '()')
+
+write(99, '("      idx = index to the states / bands which are occupied.")')
+write(99, '("          = an array which seems extremely useless.")')
+
+do iseb = 1, nst
+    write(99, '("idx(", I3, ") = ", I10)') iseb, idx(iseb)
+end do
+write(99, '()')
+
+
+write(99, '("      We now allocate the wavefunction-matrix wfmt(npcmtmax,nspinor,nst) with ...")')
+write(99, '()')
+
+write(99, '("      npcmtmax = maximum number of points over all packed muffin-tins.")')
+write(99, '("               = a variable that is SO WEIRDLY defined, it seems like a joke...")')
+write(99, '("                 ... Cf. init0.f90 and genrmesh.f90")')
+write(99, '("      npcmtmax = ", I10)') npcmtmax
+write(99, '()')
+
+write(99, '("      nspinor = second-variational spinor dimension (1 or 2).")')
+write(99, '("              = a variable that seems so weird to introduce...")')
+write(99, '("       ... since the second variation takes care of SOC, so how can nspinor be one???")')
+write(99, '("      nspinor = ", I10)') nspinor
+write(99, '()')
+
+write(99, '("      nst = number of occupied bands / states.")')
+write(99, '("      nst = ", I10)') nst
+write(99, '()')
+
 allocate(wfmt(npcmtmax,nspinor,nst))
+
+
+write(99, '("      We entering a for-loop now with ias between 1 and natmtot = ", I10)') natmtot
+write(99, '("      Recall for this: idxis(maxatoms*maxspecies = 8*200) = atoms and species indices.")')
+write(99, '("      ... Remark: this variable is closely related to another variable.")')
+write(99, '()')
+
+write(99, '()')
+write(99, '("      We now compute the density- and the magnetization-contributions.")')
+write(99, '()')
+
 call holdthd(nst,nthd)
 !$OMP PARALLEL DEFAULT(SHARED) &
 !$OMP PRIVATE(wfir,wfgp,ias,is) &
@@ -76,12 +213,28 @@ call holdthd(nst,nthd)
 !$OMP PRIVATE(ispn,jspn,n,ist) &
 !$OMP PRIVATE(z1,igp) &
 !$OMP NUM_THREADS(nthd)
+
+! If I put the print-statement from above here, I get it twice in the output-file.
+! ---> Can be cured by restricting the print-statement to a single thread.
+
 do ias=1,natmtot
   is=idxis(ias)
   npc=npcmt(is)
 !$OMP SINGLE
+  
+  ! SK Comments
+  ! lradstp was one of the convergence-generating-parameters!
+  write(99, '("      ias = ", I10)') ias
+  write(99, '("      is = idxis(ias) = ", I10)') is
+  write(99, '("      npc = npcmt(is) = ", I10)') npc
+  write(99, '("      lradstp = ", I10)') lradstp
+  write(99, '()')
+  !
+  write(99,'("      [ Subroutine wfmtsv.f90 started. ]")')
   call wfmtsv(.false.,lradstp,is,ias,nst,idx,ngp,apwalm,evecfv,evecsv,npcmtmax,&
    wfmt)
+  write(99,'("      [ Subroutine wfmtsv.f90 finished.]")')
+  write(99, '()')
 !$OMP END SINGLE
 !$OMP DO
   do j=1,nst

@@ -10,6 +10,7 @@ subroutine bandstr
 ! !USES:
 use modmain
 use modomp
+use modsebbe
 ! !DESCRIPTION:
 !   Produces a band structure along the path in reciprocal space which connects
 !   the vertices in the array {\tt vvlp1d}. The band structure is obtained from
@@ -61,8 +62,11 @@ call readfermi
 call linengy
 ! generate the APW and local-orbital radial functions and integrals
 call genapwlofr
+
 ! generate the spin-orbit coupling radial functions
+write(99,'("       We are now computing the spin-orbit coupling radial functions and I have no idea what this means.")')
 call gensocfr
+
 emin=1.d5
 emax=-1.d5
 ! begin parallel loop over k-points
@@ -74,7 +78,7 @@ call holdthd(nkpt,nthd)
 !$OMP NUM_THREADS(nthd)
 allocate(evalfv(nstfv,nspnfv))
 allocate(evecfv(nmatmax,nstfv,nspnfv),evecsv(nstsv,nstsv))
-if (task >= 21) then
+if (task >= 21 .and. task <= 25) then
   allocate(dmat(lmmax,nspinor,lmmax,nspinor,nstsv))
   allocate(apwalm(ngkmax,apwordmax,lmmaxapw,natmtot,nspnfv))
 end if
@@ -94,7 +98,7 @@ do ik=1,nkpt
 !$OMP END CRITICAL(bandstr_2)
   end do
 ! compute the band characters if required
-  if (task >= 21) then
+  if (task >= 21 .and. task <=25) then
 ! find the matching coefficients
     do ispn=1,nspnfv
       call match(ngk(ispn,ik),vgkc(:,:,ispn,ik),gkc(:,ispn,ik), &
@@ -153,7 +157,7 @@ do ik=1,nkpt
 end do
 !$OMP END DO
 deallocate(evalfv,evecfv,evecsv)
-if (task >= 21) deallocate(dmat,apwalm)
+if (task >= 21 .and. task <= 25) deallocate(dmat,apwalm)
 !$OMP END PARALLEL
 call freethd(nthd)
 t1=(emax-emin)*0.5d0
@@ -230,7 +234,7 @@ close(50)
 write(*,*)
 write(*,'(" Vertex location lines written to BANDLINES.OUT")')
 deallocate(e)
-if (task >= 21) deallocate(bc)
+if (task >= 21 .and. task <= 25) deallocate(bc)
 end subroutine
 !EOC
 

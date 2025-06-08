@@ -34,11 +34,32 @@ implicit none
 logical twrite
 integer ik,nmix,nwork
 real(8) dv,etp,de,timetot
-! allocatable arrays
+
+! SK.
+integer, dimension(7) :: unitseb = [99, 98, 97, 96, 95, 94, 93]
+integer :: iseb, jseb, kseb, lseb, mseb
+! SK End
+
+! SK with Lars (Begin): 
+! This is needed additionally for the Magnetization-adjustments
+integer i, is, ia, ias
 real(8), allocatable :: work(:)
-! initialise global variables
+complex(8), allocatable :: dmtr(:,:,:,:,:)
+! SK (End)
+
+
+! SK: Added write-statements.
+write(99,'("  [ Subroutine init0.f90 started. ]")')
+! initialise global variables.
 call init0
+write(99,'("  [ Subroutine init0.f90 finished.]")')
+write(99, '()')
+
+write(99,'("  [ Subroutine init1.f90 started. ]")')
 call init1
+write(99,'("  [ Subroutine init1.f90 finished.]")')
+write(99, '()')
+
 ! initialise q-vector-dependent variables if required
 if ((xctype(1) < 0).or.ksgwrho) call init2
 ! initialise GW variables if required
@@ -50,12 +71,33 @@ if (task == 0) trdstate=.false.
 if (task == 1) trdstate=.true.
 ! only the MPI master process should write files
 if (mp_mpi) then
+
+write(99,'("  [ Subroutine writelat.f90 started. ]")')
+write(99,'("  [ i.e. writing LATTICE.OUT         ]")')
 ! write the real and reciprocal lattice vectors to file
   call writelat
+write(99,'("  [ Subroutine writelat.f90 finished.]")')
+write(99, '()')
+
+write(99,'("  [ Subroutine writesym.f90 started.     ]")')
+write(99,'("  [ i.e. writing SYMSITE.OUT, SYMCRYS.OUT]")')
 ! write symmetry matrices to file
   call writesym
+write(99,'("  [ Subroutine writesym.f90 finished.    ]")')
+write(99, '()')
+
+write(99,'("  [ Subroutine writekpts.f90 started.]")')
+write(99,'("  [ i.e. writing KPOINTS.OUT         ]")')
 ! output the k-point set to file
   call writekpts
+write(99,'("  [ Subroutine writekpts.f90 finished.]")')
+write(99, '()')
+flush(99)
+
+write(99,'("  [ . . . ]")')
+write(99, '()')
+
+
 ! write lattice vectors and atomic positions to file
   open(50,file='GEOMETRY'//trim(filext),form='FORMATTED')
   call writegeom(50)
@@ -89,17 +131,47 @@ end if
 iscl=0
 if (trdstate) then
 ! read the Kohn-Sham potential and fields from file
+write(99,'("  [ Subroutine readstate.f90 started. ]")')
+write(99,'("  [ since trdstate = .true.           ]")')
+flush(99)
   call readstate
+write(99,'("  [ Subroutine readstate.f90 finished.]")')
+write(99, '()')
+flush(99)
   if (mp_mpi) then
     write(60,'("Potential read in from STATE.OUT")')
   end if
   if (autolinengy) call readfermi
 else
 ! initialise the density and magnetisation from atomic data
+write(99,'("  [ Subroutine rhoinit.f90 started. ]")')
+write(99,'("  [ since trdstate = .false.        ]")')
+flush(99)
   call rhoinit
+write(99,'("  [ Subroutine rhoinit.f90 finished.]")')
+write(99, '()')
+
+write(99,'("  [ Subroutine maginit.f90 started. ]")')
+write(99,'("  [ since trdstate = .false.        ]")')
+flush(99)
   call maginit
+write(99,'("  [ Subroutine maginit.f90 finished.]")')
+write(99, '()')
+
 ! compute the Kohn-Sham potential and magnetic field
+write(99,'("  [ Subroutine potks.f90 started. ]")')
+flush(99)
   call potks(.true.)
+write(99,'("  [ Subroutine potks.f90 finished.]")')
+write(99, '()')
+
+
+write(99, '()')
+write(99,'("       [ . . . ]")')
+write(99, '()')
+
+flush(99)
+
   if (mp_mpi) then
     write(60,'("Kohn-Sham potential initialised from atomic data")')
   end if
@@ -126,14 +198,36 @@ if (mp_mpi) then
   write(60,'("+------------------------------+")')
   write(60,'("| Self-consistent loop started |")')
   write(60,'("+------------------------------+")')
+  
+  do iseb = 1, size(unitseb)
+    write(unitseb(iseb),*)
+    write(unitseb(iseb),'("  +------------------------------+")')
+    write(unitseb(iseb),'("  | Self-consistent loop started |")')
+    write(unitseb(iseb),'("  +------------------------------+")')
+  end do
+
 end if
 do iscl=1,maxscl
   if (mp_mpi) then
-    write(60,*)
-    write(60,'("+--------------------+")')
-    write(60,'("| Loop number : ",I4," |")') iscl
-    write(60,'("+--------------------+")')
+
+  write(60, *)
+  write(60, '("+--------------------+")')
+  write(60, '("| Loop number : ",I4," |")') iscl
+  write(60, '("+--------------------+")')
+  
+  do iseb = 1, size(unitseb)
+    write(unitseb(iseb), *)
+    write(unitseb(iseb), '("  +--------------------+")')
+    write(unitseb(iseb), '("  | Loop number : ",I4," |")') iscl
+    write(unitseb(iseb), '("  +--------------------+")')
+  end do
+  
+  write(99, '()')
+  write(99,'("       [ . . . ]")')
+  write(99, '()')
+
   end if
+  
   if (iscl >= maxscl) then
     if (mp_mpi) then
       write(60,*)
@@ -151,12 +245,20 @@ do iscl=1,maxscl
   if (tlast) wrtdsk=.true.
 ! generate the core wavefunctions and densities
   call gencore
+  if (mp_mpi) flush(60)
+
 ! find the new linearisation energies
   call linengy
+  
+  if (mp_mpi) flush(60)
+
 ! write out the linearisation energies
   if (mp_mpi) call writelinen
 ! generate the APW and local-orbital radial functions and integrals
   call genapwlofr
+  
+  if (mp_mpi) flush(60)
+
 ! generate the spin-orbit coupling radial functions
   call gensocfr
 ! generate the first- and second-variational eigenvectors and eigenvalues
@@ -185,7 +287,18 @@ do iscl=1,maxscl
     call gwrhomag
   else
 ! density calculated directly from the Kohn-Sham states
+    write(99,'("  [ Subroutine rhomag.f90 started. ]")')
     call rhomag
+    write(99,'("  [ Subroutine rhomag.f90 finished.]")')
+    write(99, '()')
+    ! SK Start
+!    if (tlast) then
+!	write(99,'("  [ Subroutine rhomag_sebbe.f90 started. ]")')
+!	call rhomag_sebbe
+!	write(99,'("  [ Subroutine rhomag_sebbe.f90 finished.]")')
+!        write(99, '()')
+!    end if
+    ! SK End
   end if
 ! DFT+U or fixed tensor moment calculation
   if ((dftu /= 0).or.(ftmtype /= 0)) then
@@ -194,10 +307,28 @@ do iscl=1,maxscl
 ! write the FTM tensor moments to file
     if (ftmtype /= 0) call writeftm
 ! generate the DFT+U or FTM muffin-tin potential matrices
+
+    ! SK: Begin Sebbe "Hack"
+    allocate(dmtr(lmmaxdm,nspinor,lmmaxdm,nspinor,0:1))
+    do i = 1, ndftu
+    is = isldu(1, i)
+    do ia = 1, natoms(is)
+        ias = idxas(ia, is)
+        ! Optional: Print matrix shape and bounds
+        call trdmatdu(lmaxdm, lmmaxdm, dmatmt(:,:,:,:,ias), dmtr)
+        dmatmt(:,:,:,:,ias) = dmtr(:,:,:,:,0)
+    end do
+end do
+    deallocate(dmtr)
+     ! SK: End Sebbe "Hack"
+     
     call genvmatmt
   end if
+
+  if (mp_mpi) flush(60)
   if (dftu /= 0) then
     if (mp_mpi) then
+    
 ! write the DFT+U matrices to file
       call writedftu
 ! calculate and write tensor moments to file
@@ -387,6 +518,7 @@ if (mp_mpi) then
   close(65)
 ! close the DTOTENERGY.OUT file
   close(66)
+
 ! close the RESIDUAL.OUT file
   if (xctype(1) < 0) close(69)
 ! write to VARIABLES.OUT if required

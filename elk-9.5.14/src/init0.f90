@@ -369,12 +369,26 @@ call genrmesh
 npmtmax=1
 npcmtmax=1
 do is=1,nspecies
-  npmti(is)=lmmaxi*nrmti(is)
-  npmt(is)=npmti(is)+lmmaxo*(nrmt(is)-nrmti(is))
-  npmtmax=max(npmtmax,npmt(is))
-  npcmti(is)=lmmaxi*nrcmti(is)
-  npcmt(is)=npcmti(is)+lmmaxo*(nrcmt(is)-nrcmti(is))
-  npcmtmax=max(npcmtmax,npcmt(is))
+  write(99, '()')
+  npmti(is) = lmmaxi * nrmti(is)
+  write(99,'("   npmti(", I3, ") = ", I10)') is, npmti(is)
+  
+  npmt(is) = npmti(is) + lmmaxo * (nrmt(is) - nrmti(is))
+  write(99,'("   npmt(", I3, ") = ", I10)') is, npmt(is)
+
+  npmtmax = max(npmtmax, npmt(is))
+  write(99,'("   npmtmax = ", I10)') npmtmax
+
+  npcmti(is) = lmmaxi * nrcmti(is)
+  write(99,'("   npcmti(", I3, ") = ", I10)') is, npcmti(is)
+
+  npcmt(is) = npcmti(is) + lmmaxo * (nrcmt(is) - nrcmti(is))
+  write(99,'("   npcmt(", I3, ") = ", I10)') is, npcmt(is)
+
+  npcmtmax = max(npcmtmax, npcmt(is))
+  write(99,'("   npcmtmax = ", I10)') npcmtmax
+  write(99, '()')
+
 end do
 
 !--------------------------------------!
@@ -544,6 +558,13 @@ allocate(rhocr(nrmtmax,natmtot,nspncr))
 !-------------------------------------------------------------!
 !     charge density, potentials and exchange-correlation     !
 !-------------------------------------------------------------!
+
+! SK
+if (allocated(rhomt_sebbe)) deallocate(rhomt_sebbe)
+allocate(rhomt_sebbe(npmtmax,natmtot))
+! if (allocated(rhoir_sebbe)) deallocate(rhoir_sebbe)
+! allocate(rhoir_sebbe(ngtot))
+
 ! allocate charge density arrays
 if (allocated(rhomt)) deallocate(rhomt)
 allocate(rhomt(npmtmax,natmtot))

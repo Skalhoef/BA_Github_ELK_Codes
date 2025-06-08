@@ -74,7 +74,7 @@ else
     end if
   end do
 end if
-if (any(task == [20,21,22,23])) then
+if (any(task == [20,21,22,23,24])) then
 ! generate k-points along a path for band structure plots
   call plotpt1d(bvec,nvp1d,npp1d,vvlp1d,vplp1d,dvp1d,dpp1d)
   nkpt=npp1d

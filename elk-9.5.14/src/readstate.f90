@@ -187,6 +187,8 @@ if (spinpol_) then
   allocate(rvfir_(ngtot_,ndmag_))
   allocate(rvfcmt_(lmmaxo_,nrcmtmax_,natmtot,ndmag_))
   read(100) rvfmt_,rvfir_
+
+  !!! Begin further "Hack".
   call rgvfmt(magmt)
   call rgvir(magir)
   read(100) rvfmt_,rvfir_
@@ -195,6 +197,19 @@ if (spinpol_) then
   read(100) rvfcmt_,rvfir_
   call rgvfcmt(bsmt)
   call rgvir(bsir)
+  !!! End further "Hack".
+
+  !!! Begin Sebbe hack.
+  if (.true.) then
+     magmt(:,:,:)=0.d0
+     magir(:,:)=0.d0
+     bxcmt(:,:,:)=0.d0
+     bsmt(:,:,:)=0.d0
+     bxcir(:,:)=0.d0
+     bsir(:,:)=0.d0
+  endif
+  !!! End Sebbe hack.
+
   deallocate(rvfmt_,rvfir_,rvfcmt_)
 ! read fixed spin moment effective fields
   if (fsmtype_ /= 0) then

@@ -38,25 +38,97 @@ lmax=min(lmaxi,1)
 allocate(zfft(ngtot))
 zfft(:)=0.d0
 call holdthd(nspecies,nthd)
+
+! SK: Added Write-statement.
+!write(99, '()')
+!write(99, '()')
+
+!write(99,'("-- SK 20.1 -- rhoinit.f90 : We are now initializing the density.")')
+!write(99, '()')
+!write(99,'("-- SK 20.1 -- rhoinit.f90 : We entering a for-loop over the atomic species now.")')
+!write(99, '()')
+!flush(99)
+
 !$OMP PARALLEL DO DEFAULT(SHARED) &
 !$OMP PRIVATE(ffg,wr,nr,nrs,nro,ig) &
 !$OMP PRIVATE(t1,t2,sm,ir,x,ia,ias,ifg) &
 !$OMP NUM_THREADS(nthd)
+
 do is=1,nspecies
+! SK: Added write statement.
+
+  !$OMP CRITICAL
+  !write(99,'(A,I0)') "    -- SK 20.2 -- rhoinit.f90 : Processing species is = ", is
+  !flush(99)
+  !$OMP END CRITICAL
+  
   nr=nrmt(is)
   nrs=nrsp(is)
   nro=nrs-nr+1
-! determine the weights for the radial integral
+  
+  ! SK: Added write statements for nrmt, nrsp, and nro.
+  !$OMP CRITICAL
+  !write(99, '(A,I6,A,I6)') "    -- SK 20.3 -- rhoinit.f90 : nr = nrmt(", is, ") = ", nr
+  !write(99, '(A,I6,A,I6)') "    -- SK 20.4 -- rhoinit.f90 : nrs = nrsp(", is, ") = ", nrs
+  !write(99, '(A,I0)') "    -- SK 20.5 -- rhoinit.f90 : nro = nrs - nr + 1 = ", nro
+  !write(99, '()')
+  !flush(99)
+  !$OMP END CRITICAL
+  
+
+  ! SK: Added write statements.
+  !$OMP CRITICAL
+  !write(99,'("    -- SK 20.6 -- rhoinit.f90 : We are calling wsplint now with the following arguments:")')
+  !write(99, '(A,I6)') "    -- SK 20.6 -- rhoinit.f90 : Value of nro: ", nro
+  !write(99, '(A,F12.6)') "    -- SK 20.6 -- rhoinit.f90 : Value of rsp(nr, is): ", rsp(nr, is)
+  !write(99, '(A,F12.6)') "    -- SK 20.6 -- rhoinit.f90 : Value of wr(nr): ", wr(nr)
+  !write(99, '()')
+  !flush(99)
+  !$OMP END CRITICAL
+  ! determine the weights for the radial integral
   call wsplint(nro,rsp(nr,is),wr(nr))
+  !$OMP CRITICAL
+  !write(99,'("    -- SK 20.7 -- rhoinit.f90 : We are done calling wsplint now.")')
+  !write(99, '(A,F12.6)') "    -- SK 20.6 -- rhoinit.f90 : Value of wr(nr): ", wr(nr)
+  !write(99,'("    -- SK 20.8 -- rhoinit.f90 : Question: What did wsplint do?")')
+
+  !write(99, '()')
+  !write(99, '()')
+  !write(99,'("    -- SK 20.9 -- rhoinit.f90 : We entering another for-loop over ngvc (???).")')
+  !write(99, '(A,I6)') "    -- SK 20.10 -- rhoinit.f90 : Value of ngvc: ", ngvc
+
+  !write(99, '()')
+  !flush(99)
+  !$OMP END CRITICAL
+  
   do ig=1,ngvc
     t1=gc(ig)
+    !$OMP CRITICAL
+    !write(99,'(A,I0)') "        -- SK 20.10.1 -- rhoinit.f90 : Processing ig = ", ig
+    !write(99,'(A,F12.6)') "        -- SK 20.10.2 -- rhoinit.f90 : t1 = gc(ig) = ", t1
+    !write(99,'(A,F12.6)') "        -- SK 20.10.3 -- rhoinit.f90 : epslat = ", epslat
+    !write(99, '()')
+    !flush(99)
+    !$OMP END CRITICAL
 ! spherical bessel function j_0(x) times the atomic density tail
     if (t1 > epslat) then
+      !$OMP CRITICAL
+      !write(99,'("        -- SK 20.10.4 -- rhoinit.f90 : t1 > epslat")')
+      !$OMP END CRITICAL
       t2=1.d0/t1
       sm=0.d0
       do ir=nr,nrs
         x=t1*rsp(ir,is)
         sm=sm+t2*sin(x)*rhosp(ir,is)*rsp(ir,is)*wr(ir)
+        !$OMP CRITICAL
+        !write(99,'(A,I0)') "            -- SK 20.10.4.1 -- rhoinit.f90 : Processing ir = ", ir
+        !write(99,'(A,F12.6)') "            -- SK 20.10.4.2 -- rhoinit.f90 : rsp(ir,is) = ", rsp(ir,is)
+        !write(99,'(A,F12.6)') "            -- SK 20.10.4.3 -- rhoinit.f90 : x = t1 * rsp(ir,is) = ", x
+        !write(99,'(A,F12.6)') "            -- SK 20.10.4.4 -- rhoinit.f90 : rhosp(ir,is) = ", rhosp(ir,is)
+        !write(99, '(A, F12.6)') "            -- SK 20.10.4.5 -- rhoinit.f90 : epslat = ", epslat
+        !write(99, '()')
+        !flush(99)
+        !$OMP END CRITICAL
       end do
     else
       sm=sum(rhosp(nr:nrs,is)*(rsp(nr:nrs,is)**2)*wr(nr:nrs))

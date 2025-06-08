@@ -63,5 +63,11 @@ end do
 call freethd(nthd)
 ! add the magnetic dipole field if required
 if (tbdip) call bdipole
+
+!!! Begin Sebbe hack.
+bsir(:,:)=0.d0
+bsmt(:,:,:)=0.d0
+!!! End Sebbe hack.
+
 end subroutine
 

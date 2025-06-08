@@ -6,7 +6,7 @@ SRC_modules = modmain.f90 $(SRC_MPI) modmpi.f90 modramdisk.f90 $(SRC_LIBXC) \
  modxcifc.f90 modfxcifc.f90 moddftu.f90 modrdm.f90 modphonon.f90 modtest.f90 \
  modrandom.f90 modpw.f90 modvars.f90 modtddft.f90 modgw.f90 modulr.f90 \
  modbog.f90 moddelf.f90 $(SRC_OMP) modomp.f90 $(SRC_MKL) mkl_init.f90 \
- $(SRC_W90S) modw90.f90
+ $(SRC_W90S) modw90.f90 modsebbe.f90
 
 # Elk program
 SRC_elk = elk.f90
@@ -95,7 +95,7 @@ SRC_main1 = \
  cpotclmt.f90 rfmtsm.f90 rbshtip.f90 rfshtip.f90 zbshtip.f90 zfshtip.f90 \
  cbsht.f90 cbshtip.f90 cfshtip.f90 gencvclmt.f90 zcfmtinp.f90 zcfinp.f90 \
  cpotcoul.f90 ggamt_3.f90 ggair_3.f90 piezoelt.f90 magnetoelt.f90 zftcf.f90 \
- rmtavrg.f90 zlrzncnv.f90 efieldmt.f90 writeefield.f90
+ rmtavrg.f90 zlrzncnv.f90 efieldmt.f90 writeefield.f90 spintexture1d.f90
 
 SRC_main = $(SRC_main0) $(SRC_main1)
 
@@ -145,7 +145,7 @@ SRC_ULR1 = \
 SRC_ULR = $(SRC_ULR0) $(SRC_ULR1)
 
 SRC_DFTU0 = \
- gendmatmt.f90 genveedu.f90 tm2todm.f90 tm3todm.f90 dmtotm3.f90
+ gendmatmt.f90 genveedu.f90 tm2todm.f90 tm3todm.f90 dmtotm3.f90 trdmatdu.f90
 
 SRC_DFTU1 = \
  writedftu.f90 sbesseli.f90 shankeli.f90 genfdu.f90 genfdufr.f90 engyfdu.f90 \

@@ -23,6 +23,18 @@ call mpi_comm_size(mpicom,np_mpi,ierror)
 ! determine the local MPI process number
 call mpi_comm_rank(mpicom,lp_mpi,ierror)
 ! determine if the local process is the master
+
+! SK: open SebOutLog.OUT file
+open(99,file='A_Seb_INFO'//trim(filext),form='FORMATTED')
+open(98,file='B_igpig_INFO'//trim(filext),form='FORMATTED')
+open(97,file='B_occsvp_INFO'//trim(filext),form='FORMATTED')
+open(96,file='B_igpig_tilde_INFO'//trim(filext),form='FORMATTED')
+open(95,file='B_apwalm_INFO'//trim(filext),form='FORMATTED')
+open(94,file='B_evecfv_INFO'//trim(filext),form='FORMATTED')
+open(93,file='B_evecsv_INFO'//trim(filext),form='FORMATTED')
+open(92,file='B_zfzrf_INFO'//trim(filext),form='FORMATTED')
+open(91,file='C_EVECSV_INFO'//trim(filext),form='FORMATTED')
+
 if (lp_mpi == 0) then
   mp_mpi=.true.
   write(*,*)
@@ -32,12 +44,24 @@ if (lp_mpi == 0) then
 else
   mp_mpi=.false.
 end if
+
+! SK: Added write-statement.
+write(99, '()')
+write(99,'("=== Sebastians write-statements for added comprehension ===")')
+write(99, '()')
+write(99, '()')
+write(99,'("[ Subroutine elk.f90 started. ]")')
+write(99, '()')
+write(99,'(" [ Subroutine readinput.f90 started. ]")')
 ! read input files
 call readinput
+write(99,'(" [ Subroutine readinput.f90 finished.]")')
+write(99, '()')
+
 ! initialise OpenMP variables
-call omp_init
+call omp_init ! SK: This is something weird (without Fortran-file).
 ! initialise the MKL library
-call mkl_init
+call mkl_init ! SK: This has something to do with threads.
 if (mp_mpi) then
   write(*,*)
   write(*,'("Number of MPI processes : ",I6)') np_mpi
@@ -115,7 +139,9 @@ do itask=1,ntasks
   if (wrtvars) call writevars('task',iv=task)
   select case(task)
   case(0,1)
+    write(99,'(" [ Subroutine gndstate.f90 started. ]")')
     call gndstate
+    write(99,'(" [ Subroutine gndstate.f90 finished.]")')
   case(2,3)
     call geomopt
   case(5)
@@ -128,6 +154,8 @@ do itask=1,ntasks
     call writelsj
   case(20,21,22,23)
     call bandstr
+  case(24)
+    call spintexture1d ! SK: Added subroutine.
   case(25)
     call effmass
   case(28,29)
@@ -290,6 +318,18 @@ if (mp_mpi) then
   write(*,'("| Elk code stopped |")')
   write(*,'("+------------------+")')
 end if
+
+! SK: Closing the output-file.
+close(99)
+close(98)
+close(97)
+close(96)
+close(95)
+close(94)
+close(93)
+close(92)
+close(91)
+
 ! terminate MPI execution environment
 call mpi_finalize(ierror)
 end program

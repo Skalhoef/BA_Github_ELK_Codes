@@ -12,6 +12,10 @@ integer ik,nst,ist
 integer ist0,ist1,jst0,jst1
 integer i1,i2,i3,nf,f
 integer np,i,nthd
+!!! SK
+integer :: Nseb,jseb,istseb
+real, allocatable :: temp_eigenvalues_seb(:)
+!!! SK
 real(8) e0,e1,prd,v(3)
 ! allocatable arrays
 integer, allocatable :: idx(:)
@@ -74,14 +78,14 @@ do i=1,np
   call r3mv(bvec,v,vpc(:,i))
 end do
 ! number of files to plot (2 for collinear magnetism, 1 otherwise)
-if (ndmag == 1) then
+if (ndmag.eq.1) then
   nf=2
 else
   nf=1
 end if
 do f=1,nf
-  if (nf == 2) then
-    if (f == 1) then
+  if (nf.eq.2) then
+    if (f.eq.1) then
       open(50,file='FERMISURF_UP.OUT',form='FORMATTED',action='WRITE')
       jst0=1; jst1=nstfv
     else
@@ -97,12 +101,18 @@ do f=1,nf
   do ist=jst0,jst1
     e0=minval(evalsv(ist,:)); e1=maxval(evalsv(ist,:))
 ! determine if the band crosses the Fermi energy
-    if ((e0 < efermi).and.(e1 > efermi)) then
+    if ((e0.lt.efermi).and.(e1.gt.efermi)) then
       ist0=min(ist0,ist); ist1=max(ist1,ist)
     end if
   end do
   nst=ist1-ist0+1
-  if (task == 100) then
+  
+  !!! SK
+  Nseb=ist1-ist0+1
+  allocate(temp_eigenvalues_seb(Nseb))
+  !!! SK
+  
+  if (task.eq.100) then
 ! write product of eigenstates minus the Fermi energy
     write(50,'(3I6," : grid size")') np3d(:)
     i=0
@@ -111,8 +121,16 @@ do f=1,nf
         do i1=0,ngridk(1)-1
           i=i+1
           ik=ivkik(i1,i2,i3)
-          prd=product(evalsv(ist0:ist1,ik)-efermi)
-          write(50,'(4G18.10)') vpc(:,i),prd
+	!!! SK
+          jseb = 1
+          do istseb = ist0, ist1
+            temp_eigenvalues_seb(jseb)=evalsv(istseb, ik)-efermi
+            jseb=jseb+1
+          end do
+          write(50,'(3G18.10, *(G18.10))') vpc(:,i), temp_eigenvalues_seb
+          !!! SK
+          !prd=product(evalsv(ist0:ist1,ik)-efermi)
+          !write(50,'(4G18.10)') vpc(:,i),prd
         end do
       end do
     end do
@@ -134,13 +152,13 @@ do f=1,nf
 end do
 write(*,*)
 write(*,'("Info(fermisurf):")')
-if (ndmag == 1) then
+if (ndmag.eq.1) then
   write(*,'(" 3D Fermi surface data written to FERMISURF_UP.OUT and &
    &FERMISURF_DN.OUT")')
 else
   write(*,'(" 3D Fermi surface data written to FERMISURF.OUT")')
 end if
-if (task == 100) then
+if (task.eq.100) then
   write(*,'(" in terms of the product of eigenvalues minus the Fermi energy")')
 else
   write(*,'(" in terms of separate eigenvalues minus the Fermi energy")')

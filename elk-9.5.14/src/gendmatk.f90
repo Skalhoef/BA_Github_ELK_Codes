@@ -41,6 +41,14 @@ nrc=nrcmt(is)
 nrci=nrcmti(is)
 irco=nrci+1
 npci=npcmti(is)
+
+write(99, '("      We now allocate the integer is = (idxis) = ",I0)') is
+write(99, '("      We now allocate the integer nrc= nrcmt(is) = ",I0)') nrc
+write(99, '("      We now allocate the integer nrci = nrcmti(is) = ",I0)') nrci
+write(99, '("      We now allocate the integer irco = nrci + 1 = ",I0)') irco
+write(99, '("      We now allocate the integer npci = npcmti(is) = ",I0)') npci
+
+
 ! generate the second-variational wavefunctions
 allocate(wfmt(npcmtmax,nspinor,nst))
 call wfmtsv(.true.,lradstp,is,ias,nst,idx,ngp,apwalm,evecfv,evecsv,npcmtmax, &

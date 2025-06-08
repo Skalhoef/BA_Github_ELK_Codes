@@ -572,6 +572,10 @@ integer ktype(3)
 character(264) kdescr
 ! kinetic energy density density gradient requirement (see xcgrad)
 integer kgrad
+
+! SK
+real(8), allocatable :: rhomt_sebbe(:,:),rhoir_sebbe(:)
+
 ! muffin-tin and interstitial charge density
 real(8), allocatable :: rhomt(:,:),rhoir(:)
 ! trhonorm is .true. if the density is to be normalised after every iteration

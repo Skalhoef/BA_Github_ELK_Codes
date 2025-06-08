@@ -11,6 +11,12 @@ implicit none
 ! local variables
 integer ik,ispn,idm
 integer is,ias,n,nthd
+
+! SK 
+integer, dimension(7) :: unitseb = [99, 98, 97, 96, 95, 94, 93]
+integer :: iseb, jseb, kseb, lseb, mseb
+! SK End
+
 ! automatic arrays
 integer(omp_lock_kind) lock(natmtot)
 ! allocatable arrays
@@ -38,6 +44,12 @@ call holdthd(nkpt/np_mpi,nthd)
 !$OMP NUM_THREADS(nthd)
 allocate(apwalm(ngkmax,apwordmax,lmmaxapw,natmtot,nspnfv))
 allocate(evecfv(nmatmax,nstfv,nspnfv),evecsv(nstsv,nstsv))
+
+do iseb = 1, size(unitseb)
+  write(unitseb(iseb), '("    [ Beginning loop over k-points.]")')
+  write(unitseb(iseb), '()')
+end do
+
 !$OMP DO
 do ik=1,nkpt
 ! distribute among MPI processes
@@ -51,10 +63,66 @@ do ik=1,nkpt
      sfacgk(:,:,ispn,ik),apwalm(:,:,:,:,ispn))
   end do
 ! add to the density and magnetisation
+  
+  ! SK
+  !$OMP CRITICAL
+  do iseb = 1, size(unitseb)
+    write(unitseb(iseb), '()')
+    write(unitseb(iseb), '("     ================")')
+    write(unitseb(iseb), '("     k-point = ", I4)') ik
+    write(unitseb(iseb), '("     ================")')
+    write(unitseb(iseb), '()')
+  end do
+  !$OMP END CRITICAL
+
+  
+  ! Print apwalm
+  do jseb = 1, nspnfv
+    do mseb = 1, natmtot
+      do lseb = 1, lmmaxapw
+        do kseb = 1, apwordmax
+          do iseb = 1, ngkmax
+          write(95, '(ES15.8)', advance="no") apwalm(iseb, kseb, lseb, mseb, jseb)
+          end do
+          write(95, *)  ! New line after each row
+        end do
+      end do
+    end do
+  end do
+
+  ! Print evecfv
+  do jseb = 1, nspnfv
+    do mseb = 1, nstfv
+      do lseb = 1, nmatmax
+        write(94, '(ES15.8)', advance="no") evecfv(lseb, mseb, jseb)
+      end do
+      write(94, *)  ! New line after each row
+    end do
+  end do
+
+  ! Print evecsv
+  do kseb = 1, nstsv
+    do lseb = 1, nstsv
+      write(93, '(ES15.8)', advance="no") evecsv(kseb, lseb)
+    end do
+    write(93, *)  ! New line after each row
+  end do
+  
+  ! SK
+  write(99,'("     [ Subroutine rhomagk.f90 started. ]")')
   call rhomagk(ngk(:,ik),igkig(:,:,ik),lock,wkpt(ik),occsv(:,ik),apwalm, &
    evecfv,evecsv)
+  write(99,'("     [ Subroutine rhomagk.f90 finished.]")')
+  write(99, '()')
 end do
 !$OMP END DO
+
+do iseb = 1, size(unitseb)
+  write(unitseb(iseb), '("    [ Finished loop over k-points.]")')
+  write(unitseb(iseb), '()')
+end do
+
+
 deallocate(apwalm,evecfv,evecsv)
 !$OMP END PARALLEL
 call freethd(nthd)

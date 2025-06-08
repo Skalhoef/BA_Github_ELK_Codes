@@ -11,7 +11,10 @@ implicit none
 ! local variables
 integer nthd
 ! calculate the valence density and magnetisation
+write(99,'("   [ Subroutine rhomagv.f90 started. ]")')
 call rhomagv
+write(99,'("   [ Subroutine rhomagv.f90 finished.]")')
+write(99, '()')
 ! add the core density and magnetisation to the total
 call rhocore
 call holdthd(2,nthd)

@@ -45,6 +45,7 @@ real(8) axang(4),rot(3,3)
 real(8) v(3),t1
 character(256) block,symb,str
 
+
 !------------------------!
 !     default values     !
 !------------------------!
@@ -402,6 +403,7 @@ case('tasks')
       ntasks=i-1
       goto 10
     end if
+    ! SK: Here the task from the string str is being saved in tasks(i) 
     read(str,*,iostat=ios) tasks(i)
     if (ios /= 0) then
       write(*,*)
@@ -444,6 +446,7 @@ case('fspecies')
   write(*,'("Error(readinput): too many fractional nucleus species")')
   write(*,*)
   stop
+  ! SK: avec contains (probably) the lattice-vectors in its COLUMNS
 case('avec')
   read(50,'(A)',err=20) str
   read(str,*,err=20) avec(:,1)
@@ -490,6 +493,7 @@ case('radkpt')
     write(*,*)
     stop
   end if
+! SK: Reading in of the k-grid.
 case('ngridk')
   read(50,'(A)',err=20) str
   read(str,*,err=20) ngridk(:)
@@ -522,6 +526,7 @@ case('ngridq')
   end if
 case('reduceq')
   read(50,*,err=20) reduceq
+! SK: Reading in of rgkmax
 case('rgkmax')
   read(50,'(A)',err=20) str
   read(str,*,err=20) rgkmax
@@ -532,10 +537,12 @@ case('rgkmax')
     write(*,*)
     stop
   end if
+! SK: Reading in of gmaxvr
 case('gmaxvr')
   read(50,'(A)',err=20) str
   read(str,*,err=20) gmaxvr
   read(str,*,iostat=ios) gmaxvr,dgmaxvr
+! SK: Reading in of lmaxapw
 case('lmaxapw')
   read(50,'(A)',err=20) str
   read(str,*,err=20) lmaxapw
@@ -645,6 +652,7 @@ case('epschg')
     write(*,*)
     stop
   end if
+! SK: Reading in of nempty
 case('nempty','nempty0')
   read(50,'(A)',err=20) str
   read(str,*,err=20) nempty0
