@@ -10,7 +10,6 @@ subroutine bandstr
 ! !USES:
 use modmain
 use modomp
-use modsebbe
 ! !DESCRIPTION:
 !   Produces a band structure along the path in reciprocal space which connects
 !   the vertices in the array {\tt vvlp1d}. The band structure is obtained from

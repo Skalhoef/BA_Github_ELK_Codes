@@ -74,7 +74,7 @@ write(99, '("             ... cf. also findgnkmax.f90.")')
 write(99, '("      ngkmax = ", I10)') ngkmax
 write(99, '()')
 
-write(99, '("      natmtot = number of atomic species.")')
+write(99, '("      natmtot = number of atoms in the unit cell.")')
 write(99, '("      natmtot = ", I10)') natmtot
 write(99, '()')
 
