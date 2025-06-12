@@ -60,7 +60,7 @@ end if
 lmaxi=min(lmaxi,lmaxo)
 lmmaxapw=(lmaxapw+1)**2
 lmmaxi=(lmaxi+1)**2
-lmmaxo=(lmaxo+1)**2
+lmmaxo=(lmaxo+1)**2 
 ! check DOS lmax is within range
 lmaxdos=min(lmaxdos,lmaxo)
 ! write to VARIABLES.OUT

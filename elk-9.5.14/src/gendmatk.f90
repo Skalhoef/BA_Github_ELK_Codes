@@ -24,6 +24,24 @@ integer npci,i1,i2
 complex(8) zsm
 ! allocatable arrays
 complex(8), allocatable :: wfmt(:,:,:)
+
+! Print input arguments
+write(99,'("gendmatk: tspndg = ",L1)') tspndg
+write(99,'("gendmatk: tlmdg = ",L1)') tlmdg
+write(99,'("gendmatk: lmin = ",I10)') lmin
+write(99,'("gendmatk: lmax = ",I10)') lmax
+write(99,'("gendmatk: ias = ",I10)') ias
+write(99,'("gendmatk: nst = ",I10)') nst
+write(99,'("gendmatk: ld = ",I10)') ld
+write(99,'("gendmatk: idx array:")')
+do i1=1,nst
+  write(99,'("  idx(",I3,") = ",I10)') i1, idx(i1)
+end do
+write(99,'("gendmatk: ngp array:")')
+do i1=1,nspnfv
+  write(99,'("  ngp(",I3,") = ",I10)') i1, ngp(i1)
+end do
+
 if (lmin < 0) then
   write(*,*)
   write(*,'("Error(gendmatk): lmin < 0 : ",I8)') lmin
@@ -36,25 +54,39 @@ if (lmax > lmaxo) then
   write(*,*)
   stop
 end if
+
 is=idxis(ias)
+write(99,'("gendmatk: is = idxis(ias) = ",I10)') is
+
 nrc=nrcmt(is)
+write(99,'("gendmatk: nrc = nrcmt(is) = ",I10)') nrc
+
 nrci=nrcmti(is)
+write(99,'("gendmatk: nrci = nrcmti(is) = ",I10)') nrci
+
 irco=nrci+1
+write(99,'("gendmatk: irco = nrci + 1 = ",I10)') irco
+
 npci=npcmti(is)
+write(99,'("gendmatk: npci = npcmti(is) = ",I10)') npci
 
-write(99, '("      We now allocate the integer is = (idxis) = ",I0)') is
-write(99, '("      We now allocate the integer nrc= nrcmt(is) = ",I0)') nrc
-write(99, '("      We now allocate the integer nrci = nrcmti(is) = ",I0)') nrci
-write(99, '("      We now allocate the integer irco = nrci + 1 = ",I0)') irco
-write(99, '("      We now allocate the integer npci = npcmti(is) = ",I0)') npci
-
+write(99,'("gendmatk: Allocating wfmt(npcmtmax,nspinor,nst), npcmtmax = ",I10, &
+     ", nspinor = ",I10,", nst = ",I10)') npcmtmax, nspinor, nst
 
 ! generate the second-variational wavefunctions
 allocate(wfmt(npcmtmax,nspinor,nst))
 call wfmtsv(.true.,lradstp,is,ias,nst,idx,ngp,apwalm,evecfv,evecsv,npcmtmax, &
  wfmt)
+write(99,'("gendmatk: wfmtsv called.")')
+
 ! zero the density matrix
 dmat(:,:,:,:,:)=0.d0
+
+! Print lmmaxi and lmmaxo before the loop
+write(99,'("gendmatk: lmmaxi = ",I10)') lmmaxi
+write(99,'("gendmatk: lmmaxo = ",I10)') lmmaxo
+
+
 ! loop over second-variational states
 do ist=1,nst
   do ispn=1,nspinor
@@ -69,10 +101,12 @@ do ist=1,nst
               zsm=0.d0
               i1=lm1; i2=lm2
               do irc=1,nrci
+                write(99,'("gendmatk: l = ",I4,"  i1 = ",I6,"  (irc = ",I6,")")') l, i1, irc
                 zsm=zsm+wfmt(i1,ispn,ist)*conjg(wfmt(i2,jspn,ist))*wrcmt(irc,is)
                 i1=i1+lmmaxi; i2=i2+lmmaxi
               end do
               do irc=irco,nrc
+                write(99,'("gendmatk: l = ",I4,"  i1 = ",I6,"  (irc = ",I6,")")') l, i1, irc
                 zsm=zsm+wfmt(i1,ispn,ist)*conjg(wfmt(i2,jspn,ist))*wrcmt(irc,is)
                 i1=i1+lmmaxo; i2=i2+lmmaxo
               end do
@@ -80,6 +114,7 @@ do ist=1,nst
               zsm=0.d0
               i1=npci+lm1; i2=npci+lm2
               do irc=irco,nrc
+                write(99,'("gendmatk: l = ",I4,"  i1 = ",I6,"  (irc = ",I6,")")') l, i1, irc
                 zsm=zsm+wfmt(i1,ispn,ist)*conjg(wfmt(i2,jspn,ist))*wrcmt(irc,is)
                 i1=i1+lmmaxo; i2=i2+lmmaxo
               end do

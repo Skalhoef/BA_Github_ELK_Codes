@@ -35,8 +35,6 @@ logical tasv
 
 
 
-
-
 ! SK: iro, nr, nri, nro, np and npi are variables that determine the ...
 ! SK: ... radial grid.
 
@@ -50,10 +48,16 @@ complex(8) x(nstfv,nspnfv),y(nlmwf(is),nspinor,nst)
 ! external functions
 complex(8), external :: zdotu
 
+! >>>> Add this variable to control print statements <<<<
+logical :: print99
+print99 = .false.  ! Set to .false. to deactivate all write(99,...) statements
 
-write(99, '()')
-write(99,'("       We are now computing the wavefunctions inside the muffin-tins.")')
-write(99, '()')
+
+if (print99) then
+  write(99, '()')
+  write(99,'("       We are now computing the wavefunctions inside the muffin-tins.")')
+  write(99, '()')
+end if
 
 iro=nrmti(is)+lrstp
 if (lrstp == 1) then
@@ -70,14 +74,16 @@ end if
 nro=nr-nri
 
 ! SK Begin
-write(99, '("       iro = nrmti(is) + lrstp = ", I10)') iro
-write(99, '("       nr = ", I10)') nr
-write(99, '("       nrmti(is) = nri = ", I10)') nri
-write(99, '("       np = ", I10)') np
-write(99, '("       npi = ", I10)') npi
-write(99, '("       nro = nr - nri = ", I10)') nro
-write(99, '()')
-write(99, '()')
+if (print99) then
+  write(99, '("       iro = nrmti(is) + lrstp = ", I10)') iro
+  write(99, '("       nr = ", I10)') nr
+  write(99, '("       nrmti(is) = nri = ", I10)') nri
+  write(99, '("       np = ", I10)') np
+  write(99, '("       npi = ", I10)') npi
+  write(99, '("       nro = nr - nri = ", I10)') nro
+  write(99, '()')
+  write(99, '()')
+end if
 ! SK End
 
 
@@ -90,10 +96,11 @@ end if
 !
 ! SK: Is it possible, that this statement, i.e. idx(1) == 0, is N E V E R fulfilled?
 !
-
-write(99,'("       We are now checking, whether idx(1)==0, which should N E V E R be fulfilled... (Weird?!)")')
-write(99,'("       If it is fulfilled, the code will apparently compute all the second-variational wavefunctions...")')
-write(99, '()')
+if (print99) then
+  write(99,'("       We are now checking, whether idx(1)==0, which should N E V E R be fulfilled... (Weird?!)")')
+  write(99,'("       If it is fulfilled, the code will apparently compute all the second-variational wavefunctions...")')
+  write(99, '()')
+end if
 
 ! check if all the second-variational wavefunctions should be calculated
 if (idx(1) == 0) then
@@ -102,17 +109,18 @@ else
   tasv=.false.
 end if
 
+if (print99) then
+  write(99,'("       lmaxo = ", I10)') lmaxo
+  write(99,'("       We now loop over local orbitals for APW-functions.")')
+  write(99, '()')
 
-write(99,'("       lmaxo = ", I10)') lmaxo
-write(99,'("       We now loop over local orbitals for APW-functions.")')
-write(99, '()')
+  write(99,'("       For is = ", I3, " one has for apword(l, is) the values")') is
 
-write(99,'("       For is = ", I3, " one has for apword(l, is) the values")') is
-
-do l=0, lmaxo
-  write(99,'("       l = ", I3, " ==> apword(l, is) = ", I3)') l, apword(l, is)
-end do
-write(99, '()')
+  do iseb=0, lmaxo
+    write(99,'("       l = ", I3, " ==> apword(l, is) = ", I3)') iseb, apword(iseb, is)
+  end do
+  write(99, '()')
+end if
 
 
 call holdthd(nst,nthd)
@@ -126,13 +134,16 @@ call holdthd(nst,nthd)
 p=0
 do l=0,lmaxo
   
-  iseb = l**2 + 1
-  jseb = (l + 1)**2
-  
-  write(99,'("       For l = ", I3, " we lm between l**2+1 = ", I10, " and (l+1)**2 = ", I10)') l, iseb, jseb
-  write(99, '()')
-  write(99,'("       Computing the scalar-product for the first variation.")')
-  write(99, '()')
+  if (print99) then
+    iseb = l**2 + 1
+    jseb = (l + 1)**2
+
+    write(99,'("       For l = ", I3, " we lm between l**2+1 = ", I10, " and (l+1)**2 = ", I10)') l, iseb, jseb
+    write(99, '()')
+    write(99,'("       Computing the scalar-product for the first variation.")')
+    write(99, '()')
+  end if 
+
   do lm=l**2+1,(l+1)**2
     do io=1,apword(l,is)
       p=p+1
@@ -209,20 +220,22 @@ do j=1,nst
 
             ! SK Begin
             ! print only once the input:
-            if (not_printed_zfzrf) then
-              write(99, '("z1  = (", F10.5, ",", F10.5, ")")') real(z1), aimag(z1)
-              write(99, '("lmmaxi = ", I10)') lmmaxi
-              write(99, '("lmmaxo = ", I10)') lmmaxo
-              !write(92, '("rf array:")')
-	      !do iseb = 1, lrstp
-                !write(92, '(1000F10.5)') apwfr(iseb, :)
-              !end do
-	      !write(92, '("zf array:")')
-	      !do iseb = 1, ld
-                !write(92, '(1000F10.5)') real(wfmt(iseb, :)), aimag(wfmt(iseb, :))
-              !end do
-              not_printed_zfzrf = .false.  ! Prevent future prints
-            end if
+            if (print99) then
+              if (not_printed_zfzrf) then
+                write(99, '("z1  = (", F10.5, ",", F10.5, ")")') real(z1), aimag(z1)
+                write(99, '("lmmaxi = ", I10)') lmmaxi
+                write(99, '("lmmaxo = ", I10)') lmmaxo
+                !write(92, '("rf array:")')
+	      !do   iseb = 1, lrstp
+                  !write(92, '(1000F10.5)') apwfr(iseb, :)
+                !end do
+	      !wri  te(92, '("zf array:")')
+	      !do   iseb = 1, ld
+                  !write(92, '(1000F10.5)') real(wfmt(iseb, :)), aimag(wfmt(iseb, :))
+                !end do
+                not_printed_zfzrf = .false.  ! Prevent future prints
+              end if
+            end if 
 	    ! SK End
 
             call zfzrf(nri,z1,apwfr(1,1,io,l,ias),lmmaxi,wfmt(lm,ispn,j))
@@ -234,9 +247,11 @@ do j=1,nst
   end do
 end do
 !$OMP END DO
-write(99, '()')
-write(99,'("       [ . . . ]")')
-write(99, '()')
+if (print99) then
+  write(99, '()')
+  write(99,'("       [ . . . ]")')
+  write(99, '()')
+end if 
 
 !---------------------------------!
 !     local-orbital functions     !
